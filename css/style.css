@@ -1,0 +1,66 @@
+/* .col-xl-5{
+    color: white;
+}
+
+.row{
+    border: solid red 1px;
+}
+
+.col{
+    border: solid yellowgreen 1px;
+}
+
+col-xl{
+    border: solid rebeccapurple 1px;
+}
+ */
+
+body{
+    background-color: darkslategray;
+}
+
+.rotate {
+    -moz-transition: all .20s linear;
+    -webkit-transition: all .20s linear;
+    transition: all .20s linear;
+}
+.rotate.down {
+    -moz-transform:rotate(180deg);
+    -webkit-transform:rotate(180deg);
+    transform:rotate(180deg);
+}
+
+
+
+    
+/* .custom-combobox {
+    position: relative;
+    display: inline-block;
+}
+.custom-combobox-toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    padding: 0;
+}
+.custom-combobox-input {
+    margin: 0;
+    padding: 5px 5px;
+} */
+/* @media (max-width: 978px) {
+    .container {
+      padding:0;
+      margin:0;
+    }
+
+    body {
+      padding:0;
+    }
+
+    .navbar-fixed-top, .navbar-fixed-bottom, .navbar-static-top, div {
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom:0;
+    }
+} */

@@ -1,0 +1,120 @@
+SELECT DISTINCT stops.stop_name, REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(stop_name, '"A"', ''),'"B"',''),'"C"',''),'"D"',''),'"E"',''),'"','') FROM stops
+ORDER BY `stops`.`stop_name` ASC
+
+
+SELECT routes.route_id, routes.route_short_name, routes.route_long_name, trips.trip_id FROM routes INNER JOIN trips ON routes.route_id = trips.route_id INNER JOIN calendar ON trips.service_id = "021401_000";
+
+SELECT trips.route_id, trips.trip_id, trips.trip_headsign, trips.trip_short_name FROM trips WHERE trips.service_id = "021401_000";
+
+SELECT trips.route_id, routes.route_long_name, trips.trip_id, trips.trip_headsign, trips.trip_short_name FROM trips INNER JOIN routes ON trips.route_id = routes.route_id WHERE trips.service_id = "021401_000";
+
+SELECT stops.stop_id, stops.stop_name, stops.stop_code, routes.route_id , trips.trip_id, stop_times.departure_time, stop_times.stop_headsign FROM stops INNER JOIN stop_times ON stop_times.trip_id = "1" AND stop_times.departure_time = "05:01:00" INNER JOIN routes ON routes.route_id = "1" INNER JOIN trips on trips.trip_id = "1" INNER JOIN calendar ON calendar.service_id = "021401_000"
+
+SELECT stop_times.arrival_time, stop_times.departure_time, stop_times.stop_sequence, stops.stop_name FROM stop_times INNER JOIN trips ON trips.trip_id = 6882 INNER JOIN stops ON stops.stop_id = stop_times.stop_id
+
+SELECT stop_times.arrival_time, stop_times.departure_time, stop_times.stop_sequence, stops.stop_name FROM stop_times INNER JOIN stops ON stops.stop_id = stop_times.stop_id WHERE trip_id = 6882
+
+
+CALL PATHFINDER();
+BEGIN
+-- DECLARE arrivalTime TIME;
+DECLARE cicles int DEFAULT 0;
+DECLARE i int DEFAULT 0;
+
+-- SET arrivalTime = AddTime(@partenza , '01:00:00');
+
+CREATE TEMPORARY TABLE tripsRoutes(
+ 	idTrip int,
+	idRoute int
+);
+
+INSERT INTO tripsRoutes SELECT DISTINCT trips.trip_id, trips.route_id FROM `trips`
+INNER JOIN stop_times ON trips.trip_id = stop_times.trip_id AND stop_times.departure_time >= @partenza AND stop_times.arrival_time <= arrivalTime  WHERE trips.service_id = "021408_000" 
+ORDER BY `trips`.`route_id` ASC, `trips`.`trip_id` ASC, `stop_times`.`departure_time`  ASC;
+
+SELECT * FROM tripsRoutes WHERE 1;
+
+END
+
+/////////////////
+
+BEGIN
+
+DECLARE maxPartenza TIME;
+DECLARE cicles int DEFAULT 0;
+DECLARE i int DEFAULT 0;
+
+SET maxPartenza = AddTime(partenza , '01:00:00');
+
+CREATE TEMPORARY TABLE tripsRoutes(
+    idTrip int,
+	idRoute int
+);
+
+INSERT INTO tripsRoutes SELECT DISTINCT trips.trip_id, trips.route_id FROM `trips`
+INNER JOIN stop_times ON trips.trip_id = stop_times.trip_id AND stop_times.departure_time >= partenza && stop_times.departure_time <= maxPartenza AND stop_times.drop_off_type = 1 WHERE trips.service_id = "021408_000" 
+ORDER BY `trips`.`route_id` ASC, `trips`.`trip_id` ASC, `stop_times`.`departure_time`  ASC;
+
+SELECT * FROM tripsRoutes WHERE 1;
+
+END
+
+/////////////////
+
+PathfindevV2
+
+BEGIN
+
+DECLARE maxPartenza TIME;
+
+DECLARE stopSequence_startTmp int DEFAULT 0;
+DECLARE stopSequence_stopTmp int DEFAULT 0;
+
+DECLARE partenzaID int;
+DECLARE destinazioneID int;
+
+SET maxPartenza = AddTime(partenzaHH , '01:00:00');
+
+SELECT stops.stop_id into partenzaID FROM stops WHERE stops.stop_name = partenza;
+
+SELECT stops.stop_id into destinazioneID FROM stops WHERE stops.stop_name = destinazione;
+
+
+CREATE TEMPORARY TABLE tripsRoutes(
+ 	idTrip int,
+	idRoute int,
+    stopSequence_start int
+);
+
+CREATE TEMPORARY TABLE tripsRoutes2(
+ 	idTrip int,
+	idRoute int,
+    stopSequence_start int,
+    stopSequence_stop int
+);
+
+
+INSERT INTO tripsRoutes SELECT DISTINCT trips.trip_id, trips.route_id, stop_times.stop_sequence FROM `trips` INNER JOIN stop_times ON trips.trip_id = stop_times.trip_id AND stop_times.departure_time >= partenzaHH AND stop_times.departure_time <= maxPartenza AND stop_times.stop_id = partenzaID WHERE trips.service_id = "021408_000" ORDER BY `trips`.`route_id` ASC, `trips`.`trip_id` ASC, `stop_times`.`departure_time`  ASC;
+
+INSERT INTO tripsRoutes2 SELECT DISTINCT tripsRoutes.idTrip, tripsRoutes.idRoute, tripsRoutes.stopSequence_start, stop_times.stop_sequence FROM `tripsRoutes` INNER JOIN stop_times ON tripsRoutes.idTrip = stop_times.trip_id AND stop_times.stop_id = destinazioneID INNER JOIN trips ON trips.service_id = "021408_000" ORDER BY stop_times.departure_time;
+-- AND stop_times.drop_off_type = 1
+-- 5050
+
+-- SELECT stop_times.stop_sequence INTO stopSequence_startTmp FROM stop_times INNER JOIN stops ON stops.stop_id = stop_times.stop_id INNER JOIN routes INNER JOIN tripsRoutes ON routes.route_id = tripsRoutes.idRoute WHERE trip_id = tripsRoutes.idTrip AND stops.stop_name = partenza;
+
+-- SELECT stop_times.stop_sequence INTO stopSequence_startTmp FROM stop_times INNER JOIN stops ON stops.stop_id = stop_times.stop_id INNER JOIN routes INNER JOIN tripsRoutes ON routes.route_id = tripsRoutes.idRoute WHERE trip_id = tripsRoutes.idTrip AND stops.stop_name = destinazione;
+
+-- INSERT INTO tripsRoutes (stopSequence_start, stopSequence_stop) VALUES (stopSequence_startTmp, stopSequence_stopTmp);
+
+
+SELECT * FROM tripsRoutes2 WHERE 1;
+
+END
+
+
+
+
+
+Si sono verificati uno o più errori durante l'esecuzione della tua richiesta:
+La seguente query è fallita: "CREATE DEFINER=`root`@`localhost` PROCEDURE `pathfinderV2`(IN `partenzaHH` TIME, IN `partenza` VARCHAR(255), IN `destinazione` VARCHAR(255)) NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER BEGIN DECLARE maxPartenza TIME; DECLARE stopSequence_startTmp int DEFAULT 0; DECLARE stopSequence_stopTmp int DEFAULT 0; DECLARE partenzaID int; SET maxPartenza = AddTime(partenzaHH , '01:00:00'); SELECT stops.stop_id into partenzaID FROM stops WHERE stops.stop_name = partenza; SELECT stops.stop_id into destinazioneID FROM stops WHERE stops.stop_name = destinazione; CREATE TEMPORARY TABLE tripsRoutes( idTrip int, idRoute int, stopSequence_start int, stopSequence_stop int ); CREATE TEMPORARY TABLE tripsRoutes2( idTrip int, idRoute int, stopSequence_start int, stopSequence_stop int ); INSERT INTO tripsRoutes SELECT DISTINCT trips.trip_id, trips.route_id, 0, 0 FROM `trips` INNER JOIN stop_times ON trips.trip_id = stop_times.trip_id AND stop_times.departure_time >= partenzaHH && stop_times.departure_time <= maxPartenza AND stop_times.stop_id = partenzaID WHERE trips.service_id = "021408_000" ORDER BY `trips`.`route_id` ASC, `trips`.`trip_id` ASC, `stop_times`.`departure_time` ASC; INSERT INTO tripsRoutes2 SELECT DISTINCT tripsRoutes.idTrip, tripsRoutes.idRoute, 0, 0 FROM `tripsRoutes` INNER JOIN stop_times ON tripsRoutes.idTrip = stop_times.trip_id AND stop_times.stop_id = destinazioneID WHERE trips.service_id = "021408_000"; -- AND stop_times.drop_off_type = 1 -- 5050 -- SELECT stop_times.stop_sequence INTO stopSequence_startTmp FROM stop_times INNER JOIN stops ON stops.stop_id = stop_times.stop_id INNER JOIN routes INNER JOIN tripsRoutes ON routes.route_id = tripsRoutes.idRoute WHERE trip_id = tripsRoutes.idTrip AND stops.stop_name = partenza; -- SELECT stop_times.stop_sequence INTO stopSequence_startTmp FROM stop_times INNER JOIN stops ON stops.stop_id = stop_times.stop_id INNER JOIN routes INNER JOIN tripsRoutes ON routes.route_id = tripsRoutes.idRoute WHERE trip_id = tripsRoutes.idTrip AND stops.stop_name = destinazione; -- INSERT INTO tripsRoutes (stopSequence_start, stopSequence_stop) VALUES (stopSequence_startTmp, stopSequence_stopTmp); SELECT * FROM tripsRoutes2 WHERE 1; END"
+Messaggio di MySQL: #1327 - Undeclared variable: destinazioneID

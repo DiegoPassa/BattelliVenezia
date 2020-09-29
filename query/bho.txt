@@ -1,0 +1,121 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              12.31883,
+              45.438923
+            ],
+            [
+              12.319176,
+              45.438976
+            ],
+            [
+              12.319309,
+              45.438934
+            ],
+            [
+              12.319462,
+              45.438923
+            ],
+            [
+              12.319729,
+              45.438927
+            ],
+            [
+              12.319931,
+              45.438953
+            ],
+            [
+              12.319962,
+              45.438965
+            ],
+            [
+              12.320032,
+              45.438992
+            ],
+            [
+              12.320153,
+              45.439037
+            ],
+            [
+              12.320309,
+              45.439152
+            ],
+            [
+              12.320309,
+              45.439152
+            ]
+          ]
+        },
+        "properties": {
+          "lanes": 1,
+          "name": "Via Rodolfo Belenzani"
+        }
+      }
+    ]
+  }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  var a;
+
+  $.ajax({
+      type: "post",
+      url: "./pages/getsShape.php",
+      data: "",
+      dataType: "json",
+      success: function (response) {
+          a = response;
+          JSON.stringify(a);
+          console.log(a);
+          /* myGeoJSON.features.geometry.coordinates = response; */
+      }                            
+  });
+
+  map.on('load', function() {
+      map.addSource('route', {
+          'type': 'geojson',
+          'data': {
+              'type': 'Feature',
+              'properties': {},
+              'geometry': {
+                  'type': 'LineString',
+                  'coordinates': a    
+              }
+          } 
+      });
+      map.addLayer({
+          'id': 'route',
+          'type': 'line',
+          'source': 'route',
+          'layout': {
+              'line-join': 'round',
+              'line-cap': 'round'
+          },
+          'paint': {
+              'line-color': '#B43B96', /* #8FD2BF 4.2 */
+              'line-width': 2.5
+          }
+      });
+      
+      var coordinates = a;
+
+      // Pass the first coordinates in the LineString to `lngLatBounds` &
+      // wrap each coordinate pair in `extend` to include them in the bounds
+      // result. A variation of this technique could be applied to zooming
+      // to the bounds of multiple Points or Polygon geomteries - it just
+      // requires wrapping all the coordinates with the extend method.
+      var bounds = coordinates.reduce(function(bounds, coord) {
+      return bounds.extend(coord);
+      }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+      
+      map.fitBounds(bounds, {
+      padding: 20
+      });
+
+  });
